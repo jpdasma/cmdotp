@@ -22,8 +22,11 @@ class Storage(object):
     """
     """
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, password, *args, **kwargs):
+        self.password = password
+        self.key = self._generate_key(password)
+        self.args = args
+        self.kwargs = kwargs
 
     def write(self):
         """
@@ -35,14 +38,24 @@ class Storage(object):
         """
         pass
 
-    def _generate_key(self):
+    def export_encrypted(self, file_path, password=""):
+        """
+        """
+        key = self.key if not password else self._generate_key(password)
+
+    def export_plain_text(self, file_path):
+        """
+        """
         pass
 
-    def _encrypt(self):
+    def _generate_key(self, password):
         pass
 
-    def _decrypt(self):
-        pass
+    def _encrypt(self, password=""):
+        key = self.key if not password else self._generate_key(password)
+
+    def _decrypt(self, password=""):
+        key = self.key if not password else self._generate_key(password)
 
     def _json_to_binary(self):
         pass
