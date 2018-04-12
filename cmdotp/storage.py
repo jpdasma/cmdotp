@@ -14,17 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
+import base64
 import json
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 class Storage(object):
     """
     """
 
-    def __init__(self, password, *args, **kwargs):
+    def __init__(self, file_path, password, iterations=100000, *args, **kwargs):
+        self.file_path = file_path
         self.password = password
-        self.key = self._generate_key(password)
+        self.iterations = iterations
+        self.key = self._generate_key(password, iterations)
         self.args = args
         self.kwargs = kwargs
 
@@ -38,24 +44,30 @@ class Storage(object):
         """
         pass
 
-    def export_encrypted(self, file_path, password=""):
+    def export_encrypted(self, file_path, password="", iterations=100000):
         """
         """
-        key = self.key if not password else self._generate_key(password)
+        key = self.key if not password else self._generate_key(password, iterations)
 
     def export_plain_text(self, file_path):
         """
         """
         pass
 
-    def _generate_key(self, password):
-        pass
+    def _generate_key(self, password, iterations=100000):
+        salt = os.urandom(16)
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=iterations, backend=default_backend())
+        return base64.urlsafe_b64encode(kdf.derive(password))
 
-    def _encrypt(self, password=""):
-        key = self.key if not password else self._generate_key(password)
+    def _encrypt(self, word=b"", password="", iterations=100000):
+        key = self.key if not password else self._generate_key(password, iterations)
+        fernet = Fernet(key)
+        return fernet.encrypt(word)
 
-    def _decrypt(self, password=""):
-        key = self.key if not password else self._generate_key(password)
+    def _decrypt(self, word=b"", password="", iterations=100000):
+        key = self.key if not password else self._generate_key(password, iterations)
+        fernet = Fernet(key)
+        return fernet.decrypt(word)
 
     def _json_to_binary(self):
         pass

@@ -16,7 +16,7 @@
 from setuptools import setup, find_packages
 
 
-with open('LICENSE.md') as f:
+with open('LICENSE') as f:
     license = f.read()
 
 setup(
